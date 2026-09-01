@@ -1,40 +1,55 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import JobDetailsSkeleton from "../components/JobDetailsSkeleton";
 import SaveButton from "../components/SaveButton";
 import { useJob } from "../hooks/useJob";
 
 function JobDetailsPage() {
   const { id } = useParams();
+  const location = useLocation();
+
+  const navigationJob = location.state?.job;
 
   const {
-    data: job,
+    data: fetchedJob,
     isLoading,
     isError,
     error,
   } = useJob(id);
+
+  const job = navigationJob ?? fetchedJob;
 
   if (isLoading) {
     return <JobDetailsSkeleton />;
   }
 
   if (isError) {
+    const isJobNotFound =
+      error instanceof Error &&
+      error.message === "JOB_NOT_FOUND";
+
     return (
-      <div>
-        <h1 className="text-xl font-bold text-red-600">
-          Something went wrong
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">
+          {isJobNotFound ? "🔍" : "⚠️"}
+        </div>
+
+        <h1 className="mt-5 text-2xl font-bold tracking-tight text-slate-900">
+          {isJobNotFound
+            ? "Job no longer available"
+            : "Unable to load job"}
         </h1>
 
-        <p className="mt-2 text-slate-600">
-          {error instanceof Error
-            ? error.message
-            : "Failed to load job."}
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600 sm:text-base">
+          {isJobNotFound
+            ? "This job may have been removed or is no longer available through the job provider."
+            : "We couldn't load this job right now. Please try again later."}
         </p>
 
         <Link
           to="/"
-          className="mt-4 inline-block underline"
+          className="mt-6 inline-flex rounded-lg bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
         >
-          ← Back to jobs
+          ← Browse available jobs
         </Link>
       </div>
     );

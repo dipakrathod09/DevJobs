@@ -77,9 +77,11 @@ export async function getJob(
   const response = await fetch(`/api/jobs/${id}`);
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch job: ${response.status}`,
-    );
+    if (response.status === 404) {
+      throw new Error("JOB_NOT_FOUND");
+    }
+
+    throw new Error("JOB_API_ERROR");
   }
 
   const data = await response.json();
